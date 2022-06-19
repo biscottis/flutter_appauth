@@ -1,4 +1,5 @@
 import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_appauth/flutter_appauth.dart';
 import 'package:http/http.dart' as http;
@@ -20,35 +21,23 @@ class _MyAppState extends State<MyApp> {
   String? _accessToken;
   String? _idToken;
 
-  final TextEditingController _authorizationCodeTextController =
-      TextEditingController();
-  final TextEditingController _accessTokenTextController =
-      TextEditingController();
-  final TextEditingController _accessTokenExpirationTextController =
-      TextEditingController();
+  final TextEditingController _authorizationCodeTextController = TextEditingController();
+  final TextEditingController _accessTokenTextController = TextEditingController();
+  final TextEditingController _accessTokenExpirationTextController = TextEditingController();
 
   final TextEditingController _idTokenTextController = TextEditingController();
-  final TextEditingController _refreshTokenTextController =
-      TextEditingController();
+  final TextEditingController _refreshTokenTextController = TextEditingController();
   String? _userInfo;
 
   // For a list of client IDs, go to https://demo.duendesoftware.com
   final String _clientId = 'interactive.public';
   final String _redirectUrl = 'com.duendesoftware.demo:/oauthredirect';
   final String _issuer = 'https://demo.duendesoftware.com';
-  final String _discoveryUrl =
-      'https://demo.duendesoftware.com/.well-known/openid-configuration';
+  final String _discoveryUrl = 'https://demo.duendesoftware.com/.well-known/openid-configuration';
   final String _postLogoutRedirectUrl = 'com.duendesoftware.demo:/';
-  final List<String> _scopes = <String>[
-    'openid',
-    'profile',
-    'email',
-    'offline_access',
-    'api'
-  ];
+  final List<String> _scopes = <String>['openid', 'profile', 'email', 'offline_access', 'api'];
 
-  final AuthorizationServiceConfiguration _serviceConfiguration =
-      const AuthorizationServiceConfiguration(
+  final AuthorizationServiceConfiguration _serviceConfiguration = const AuthorizationServiceConfiguration(
     authorizationEndpoint: 'https://demo.duendesoftware.com/connect/authorize',
     tokenEndpoint: 'https://demo.duendesoftware.com/connect/token',
     endSessionEndpoint: 'https://demo.duendesoftware.com/connect/endsession',
@@ -92,8 +81,7 @@ class _MyAppState extends State<MyApp> {
                         'Sign in with auto code exchange using ephemeral session',
                         textAlign: TextAlign.center,
                       ),
-                      onPressed: () => _signInWithAutoCodeExchange(
-                          preferEphemeralSession: true),
+                      onPressed: () => _signInWithAutoCodeExchange(preferEphemeralSession: true),
                     ),
                   ),
                 ElevatedButton(
@@ -172,9 +160,8 @@ class _MyAppState extends State<MyApp> {
   Future<void> _refresh() async {
     try {
       _setBusyState();
-      final TokenResponse? result = await _appAuth.token(TokenRequest(
-          _clientId, _redirectUrl,
-          refreshToken: _refreshToken, issuer: _issuer, scopes: _scopes));
+      final TokenResponse? result = await _appAuth
+          .token(TokenRequest(_clientId, _redirectUrl, refreshToken: _refreshToken, issuer: _issuer, scopes: _scopes));
       _processTokenResponse(result);
       await _testApi(result);
     } catch (_) {
@@ -185,8 +172,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> _exchangeCode() async {
     try {
       _setBusyState();
-      final TokenResponse? result = await _appAuth.token(TokenRequest(
-          _clientId, _redirectUrl,
+      final TokenResponse? result = await _appAuth.token(TokenRequest(_clientId, _redirectUrl,
           authorizationCode: _authorizationCode,
           discoveryUrl: _discoveryUrl,
           codeVerifier: _codeVerifier,
@@ -204,8 +190,14 @@ class _MyAppState extends State<MyApp> {
       _setBusyState();
       // use the discovery endpoint to find the configuration
       final AuthorizationResponse? result = await _appAuth.authorize(
-        AuthorizationRequest(_clientId, _redirectUrl,
-            discoveryUrl: _discoveryUrl, scopes: _scopes, loginHint: 'bob'),
+        AuthorizationRequest(
+          _clientId,
+          _redirectUrl,
+          discoveryUrl: _discoveryUrl,
+          scopes: _scopes,
+          loginHint: 'bob',
+          nonce: 'some_nonce',
+        ),
       );
 
       // or just use the issuer
@@ -225,14 +217,12 @@ class _MyAppState extends State<MyApp> {
     }
   }
 
-  Future<void> _signInWithAutoCodeExchange(
-      {bool preferEphemeralSession = false}) async {
+  Future<void> _signInWithAutoCodeExchange({bool preferEphemeralSession = false}) async {
     try {
       _setBusyState();
 
       // show that we can also explicitly specify the endpoints rather than getting from the details from the discovery document
-      final AuthorizationTokenResponse? result =
-          await _appAuth.authorizeAndExchangeCode(
+      final AuthorizationTokenResponse? result = await _appAuth.authorizeAndExchangeCode(
         AuthorizationTokenRequest(
           _clientId,
           _redirectUrl,
@@ -276,8 +266,7 @@ class _MyAppState extends State<MyApp> {
       _accessToken = _accessTokenTextController.text = response.accessToken!;
       _idToken = _idTokenTextController.text = response.idToken!;
       _refreshToken = _refreshTokenTextController.text = response.refreshToken!;
-      _accessTokenExpirationTextController.text =
-          response.accessTokenExpirationDateTime!.toIso8601String();
+      _accessTokenExpirationTextController.text = response.accessTokenExpirationDateTime!.toIso8601String();
     });
   }
 
@@ -286,8 +275,7 @@ class _MyAppState extends State<MyApp> {
       // save the code verifier and nonce as it must be used when exchanging the token
       _codeVerifier = response.codeVerifier;
       _nonce = response.nonce;
-      _authorizationCode =
-          _authorizationCodeTextController.text = response.authorizationCode!;
+      _authorizationCode = _authorizationCodeTextController.text = response.authorizationCode!;
       _isBusy = false;
     });
   }
@@ -297,14 +285,12 @@ class _MyAppState extends State<MyApp> {
       _accessToken = _accessTokenTextController.text = response!.accessToken!;
       _idToken = _idTokenTextController.text = response.idToken!;
       _refreshToken = _refreshTokenTextController.text = response.refreshToken!;
-      _accessTokenExpirationTextController.text =
-          response.accessTokenExpirationDateTime!.toIso8601String();
+      _accessTokenExpirationTextController.text = response.accessTokenExpirationDateTime!.toIso8601String();
     });
   }
 
   Future<void> _testApi(TokenResponse? response) async {
-    final http.Response httpResponse = await http.get(
-        Uri.parse('https://demo.duendesoftware.com/api/test'),
+    final http.Response httpResponse = await http.get(Uri.parse('https://demo.duendesoftware.com/api/test'),
         headers: <String, String>{'Authorization': 'Bearer $_accessToken'});
     setState(() {
       _userInfo = httpResponse.statusCode == 200 ? httpResponse.body : '';
