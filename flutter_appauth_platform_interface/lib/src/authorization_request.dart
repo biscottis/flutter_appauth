@@ -3,8 +3,7 @@ import 'authorization_service_configuration.dart';
 import 'common_request_details.dart';
 
 /// The details of an authorization request to get an authorization code.
-class AuthorizationRequest extends CommonRequestDetails
-    with AuthorizationParameters {
+class AuthorizationRequest extends CommonRequestDetails with AuthorizationParameters {
   AuthorizationRequest(
     String clientId,
     String redirectUrl, {
@@ -18,6 +17,7 @@ class AuthorizationRequest extends CommonRequestDetails
     bool allowInsecureConnections = false,
     bool preferEphemeralSession = false,
     String? responseMode,
+    String? nonce,
   }) {
     this.clientId = clientId;
     this.redirectUrl = redirectUrl;
@@ -31,6 +31,7 @@ class AuthorizationRequest extends CommonRequestDetails
     this.allowInsecureConnections = allowInsecureConnections;
     this.preferEphemeralSession = preferEphemeralSession;
     this.responseMode = responseMode;
+    this.nonce = nonce;
     assertConfigurationInfo();
   }
 }
