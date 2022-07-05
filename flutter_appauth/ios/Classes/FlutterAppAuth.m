@@ -17,6 +17,9 @@
         if (authResponse.request && authResponse.request.nonce) {
             [processedResponses setObject:authResponse.request.nonce forKey:@"nonce"];
         }
+        if (authResponse.request && authResponse.request.state) {
+            [processedResponses setObject:authResponse.request.state forKey:@"state"];
+        }
      }
     if(tokenResponse.additionalParameters) {
         [processedResponses setObject:tokenResponse.additionalParameters forKey:@"tokenAdditionalParameters"];
@@ -50,7 +53,7 @@
 
 @implementation AppAuthAuthorization
 
-- (id<OIDExternalUserAgentSession>)performAuthorization:(OIDServiceConfiguration *)serviceConfiguration clientId:(NSString*)clientId clientSecret:(NSString*)clientSecret scopes:(NSArray *)scopes redirectUrl:(NSString*)redirectUrl additionalParameters:(NSDictionary *)additionalParameters preferEphemeralSession:(BOOL)preferEphemeralSession result:(FlutterResult)result exchangeCode:(BOOL)exchangeCode nonce:(nullable NSString*)nonce{
+- (id<OIDExternalUserAgentSession>)performAuthorization:(OIDServiceConfiguration *)serviceConfiguration clientId:(NSString*)clientId clientSecret:(NSString*)clientSecret scopes:(NSArray *)scopes redirectUrl:(NSString*)redirectUrl additionalParameters:(NSDictionary *)additionalParameters preferEphemeralSession:(BOOL)preferEphemeralSession result:(FlutterResult)result exchangeCode:(BOOL)exchangeCode nonce:(nullable NSString*)nonce state:(nullable NSString*)state {
     return nil;
 }
 

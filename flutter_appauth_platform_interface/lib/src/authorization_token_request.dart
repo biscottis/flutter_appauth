@@ -21,6 +21,7 @@ class AuthorizationTokenRequest extends TokenRequest
     bool preferEphemeralSession = false,
     String? nonce,
     String? responseMode,
+    String? state,
   }) : super(
           clientId,
           redirectUrl,
@@ -38,5 +39,6 @@ class AuthorizationTokenRequest extends TokenRequest
     this.promptValues = promptValues;
     this.preferEphemeralSession = preferEphemeralSession;
     this.responseMode = responseMode;
+    this.state = state;
   }
 }

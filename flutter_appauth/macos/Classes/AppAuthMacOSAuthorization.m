@@ -2,7 +2,7 @@
 
 @implementation AppAuthMacOSAuthorization
 
-- (id<OIDExternalUserAgentSession>)performAuthorization:(OIDServiceConfiguration *)serviceConfiguration clientId:(NSString*)clientId clientSecret:(NSString*)clientSecret scopes:(NSArray *)scopes redirectUrl:(NSString*)redirectUrl additionalParameters:(NSDictionary *)additionalParameters preferEphemeralSession:(BOOL)preferEphemeralSession result:(FlutterResult)result exchangeCode:(BOOL)exchangeCode nonce:(nullable NSString*)nonce{
+- (id<OIDExternalUserAgentSession>)performAuthorization:(OIDServiceConfiguration *)serviceConfiguration clientId:(NSString*)clientId clientSecret:(NSString*)clientSecret scopes:(NSArray *)scopes redirectUrl:(NSString*)redirectUrl additionalParameters:(NSDictionary *)additionalParameters preferEphemeralSession:(BOOL)preferEphemeralSession result:(FlutterResult)result exchangeCode:(BOOL)exchangeCode nonce:(nullable NSString*)nonce state:(nullable NSString*)state{
   NSString *codeVerifier = [OIDAuthorizationRequest generateCodeVerifier];
   NSString *codeChallenge = [OIDAuthorizationRequest codeChallengeS256ForVerifier:codeVerifier];
 
@@ -13,7 +13,7 @@
                                                 scope:[OIDScopeUtilities scopesWithArray:scopes]
                                                 redirectURL:[NSURL URLWithString:redirectUrl]
                                                 responseType:OIDResponseTypeCode
-                                                state:[OIDAuthorizationRequest generateState]
+                                                state: state != nil ? state : [OIDAuthorizationRequest generateState]
                                                 nonce: nonce != nil ? nonce : [OIDAuthorizationRequest generateState]
                                                 codeVerifier:codeVerifier
                                                 codeChallenge:codeChallenge
@@ -41,6 +41,7 @@
                 [processedResponse setObject:authorizationResponse.authorizationCode forKey:@"authorizationCode"];
                 [processedResponse setObject:authorizationResponse.request.codeVerifier forKey:@"codeVerifier"];
                 [processedResponse setObject:authorizationResponse.request.nonce forKey:@"nonce"];
+                [processedResponse setObject:authorizationResponse.request.state forKey:@"state"];
                 result(processedResponse);
             } else {
                 [FlutterAppAuth finishWithError:AUTHORIZE_ERROR_CODE message:[FlutterAppAuth formatMessageWithError:AUTHORIZE_ERROR_MESSAGE_FORMAT error:error] result:result];
