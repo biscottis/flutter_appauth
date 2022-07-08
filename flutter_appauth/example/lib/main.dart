@@ -197,6 +197,7 @@ class _MyAppState extends State<MyApp> {
           scopes: _scopes,
           loginHint: 'bob',
           nonce: 'some_nonce',
+          state: 'abcde',
         ),
       );
 
@@ -212,7 +213,7 @@ class _MyAppState extends State<MyApp> {
       if (result != null) {
         _processAuthResponse(result);
       }
-    } catch (_) {
+    } catch (e) {
       _clearBusyState();
     }
   }
@@ -229,6 +230,8 @@ class _MyAppState extends State<MyApp> {
           serviceConfiguration: _serviceConfiguration,
           scopes: _scopes,
           preferEphemeralSession: preferEphemeralSession,
+          nonce: 'some-nonce',
+          state: '1',
         ),
       );
 
@@ -244,7 +247,7 @@ class _MyAppState extends State<MyApp> {
         _processAuthTokenResponse(result);
         await _testApi(result);
       }
-    } catch (_) {
+    } catch (e) {
       _clearBusyState();
     }
   }

@@ -14,7 +14,7 @@ dependencies:
     git:
       url: https://github.com/biscottis/flutter_appauth
       path: flutter_appauth_platform_interface
-      ref: 45770d99c8bb8fead0b91fbaa2a882d42a23c0d7
+      ref: 471f1f4eab2efb0700d752f50d1fe21a9b7a8d6f
 
 flutter:
   plugin:

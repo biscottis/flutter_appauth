@@ -28,6 +28,7 @@ class MethodChannelFlutterAppAuth extends FlutterAppAuthPlatform {
       nonce: result['nonce'],
       authorizationAdditionalParameters:
           result['authorizationAdditionalParameters']?.cast<String, dynamic>(),
+      state: result['state'],
     );
   }
 

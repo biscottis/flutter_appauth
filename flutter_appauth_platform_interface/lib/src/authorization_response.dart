@@ -5,6 +5,7 @@ class AuthorizationResponse {
     this.codeVerifier,
     this.nonce,
     this.authorizationAdditionalParameters,
+    this.state,
   });
 
   /// The authorization code.
@@ -22,4 +23,6 @@ class AuthorizationResponse {
 
   /// Additional parameters included in the response.
   final Map<String, dynamic>? authorizationAdditionalParameters;
+
+  final String? state;
 }
