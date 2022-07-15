@@ -25,6 +25,9 @@ import net.openid.appauth.connectivity.DefaultConnectionBuilder;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -165,7 +168,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleAuthorizeMethodCall(arguments, true);
                 } catch (Exception ex) {
-                    finishWithError(AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithError(AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, getStringStackTraceFromException(ex), getCauseFromException(ex));
                 }
                 break;
             case AUTHORIZE_METHOD:
@@ -173,7 +176,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleAuthorizeMethodCall(arguments, false);
                 } catch (Exception ex) {
-                    finishWithError(AUTHORIZE_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithError(AUTHORIZE_ERROR_CODE, getStringStackTraceFromException(ex), getCauseFromException(ex));
                 }
                 break;
             case TOKEN_METHOD:
@@ -181,7 +184,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleTokenMethodCall(arguments);
                 } catch (Exception ex) {
-                    finishWithError(TOKEN_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithError(TOKEN_ERROR_CODE, getStringStackTraceFromException(ex), getCauseFromException(ex));
                 }
                 break;
             case END_SESSION_METHOD:
@@ -189,7 +192,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleEndSessionMethodCall(arguments);
                 } catch (Exception ex) {
-                    finishWithError(END_SESSION_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithError(END_SESSION_ERROR_CODE, getStringStackTraceFromException(ex), getCauseFromException(ex));
                 }
                 break;
             default:
@@ -498,7 +501,13 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
 
     private String getCauseFromException(Exception ex) {
         final Throwable cause = ex.getCause();
-        return cause != null ? cause.getMessage() : null;
+        return cause != null ? getStringStackTraceFromException(cause) : null;
+    }
+
+    private String getStringStackTraceFromException(Throwable ex) {
+        final Writer writer = new StringWriter();
+        ex.printStackTrace(new PrintWriter(writer));
+        return writer.toString();
     }
 
 
