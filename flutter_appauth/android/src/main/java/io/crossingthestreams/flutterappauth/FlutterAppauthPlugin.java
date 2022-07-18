@@ -8,6 +8,8 @@ import android.net.Uri;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
+
 import net.openid.appauth.AppAuthConfiguration;
 import net.openid.appauth.AuthorizationException;
 import net.openid.appauth.AuthorizationRequest;
@@ -165,6 +167,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleAuthorizeMethodCall(arguments, true);
                 } catch (Exception ex) {
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                     finishWithError(AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
                 }
                 break;
@@ -173,6 +176,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleAuthorizeMethodCall(arguments, false);
                 } catch (Exception ex) {
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                     finishWithError(AUTHORIZE_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
                 }
                 break;
@@ -181,6 +185,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleTokenMethodCall(arguments);
                 } catch (Exception ex) {
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                     finishWithError(TOKEN_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
                 }
                 break;
@@ -189,6 +194,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     checkAndSetPendingOperation(call.method, result);
                     handleEndSessionMethodCall(arguments);
                 } catch (Exception ex) {
+                    FirebaseCrashlytics.getInstance().recordException(ex);
                     finishWithError(END_SESSION_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
                 }
                 break;
@@ -488,6 +494,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
         }
     }
 
+
     private void finishWithDiscoveryError(AuthorizationException ex) {
         finishWithError(DISCOVERY_ERROR_CODE, String.format(DISCOVERY_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
     }
@@ -669,4 +676,3 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
     }
 
 }
-
