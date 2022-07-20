@@ -168,7 +168,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     handleAuthorizeMethodCall(arguments, true);
                 } catch (Exception ex) {
                     FirebaseCrashlytics.getInstance().recordException(ex);
-                    finishWithError(AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithUnknownError(AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, ex);
                 }
                 break;
             case AUTHORIZE_METHOD:
@@ -177,7 +177,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     handleAuthorizeMethodCall(arguments, false);
                 } catch (Exception ex) {
                     FirebaseCrashlytics.getInstance().recordException(ex);
-                    finishWithError(AUTHORIZE_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithUnknownError(AUTHORIZE_ERROR_CODE, ex);
                 }
                 break;
             case TOKEN_METHOD:
@@ -186,7 +186,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     handleTokenMethodCall(arguments);
                 } catch (Exception ex) {
                     FirebaseCrashlytics.getInstance().recordException(ex);
-                    finishWithError(TOKEN_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithUnknownError(TOKEN_ERROR_CODE, ex);
                 }
                 break;
             case END_SESSION_METHOD:
@@ -195,7 +195,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     handleEndSessionMethodCall(arguments);
                 } catch (Exception ex) {
                     FirebaseCrashlytics.getInstance().recordException(ex);
-                    finishWithError(END_SESSION_ERROR_CODE, ex.getLocalizedMessage(), getCauseFromException(ex));
+                    finishWithUnknownError(END_SESSION_ERROR_CODE, ex);
                 }
                 break;
             default:
@@ -476,7 +476,8 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
     }
 
     private void finishWithTokenError(AuthorizationException ex) {
-        finishWithError(TOKEN_ERROR_CODE, String.format(TOKEN_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
+        String errorCode = String.format("%s:%s", TOKEN_ERROR_CODE, ex.code);
+        finishWithError(errorCode, String.format(TOKEN_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
     }
 
 
@@ -494,13 +495,21 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
         }
     }
 
+    private void finishWithUnknownError(String appAuthErrorCode, Exception ex) {
+        String errorCode = (ex instanceof AuthorizationException)
+                ? String.format("%s:%s", appAuthErrorCode, ((AuthorizationException) ex).code)
+                : appAuthErrorCode;
+        finishWithError(errorCode, ex.getLocalizedMessage(), getCauseFromException(ex));
+    }
 
     private void finishWithDiscoveryError(AuthorizationException ex) {
-        finishWithError(DISCOVERY_ERROR_CODE, String.format(DISCOVERY_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
+        String errorCode = String.format("%s:%s", DISCOVERY_ERROR_CODE, ex.code);
+        finishWithError(errorCode, String.format(DISCOVERY_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
     }
 
     private void finishWithEndSessionError(AuthorizationException ex) {
-        finishWithError(END_SESSION_ERROR_CODE, String.format(END_SESSION_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
+        String errorCode = String.format("%s:%s", END_SESSION_ERROR_CODE, ex.code);
+        finishWithError(errorCode, String.format(END_SESSION_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
     }
 
     private String getCauseFromException(Exception ex) {
@@ -555,7 +564,8 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                         if (resp != null) {
                             finishWithSuccess(tokenResponseToMap(resp, authResponse));
                         } else {
-                            finishWithError(AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, String.format(AUTHORIZE_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
+                            String errorCode = String.format("%s:%s", AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, ex.code);
+                            finishWithError(errorCode, String.format(AUTHORIZE_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
                         }
                     }
                 };
@@ -568,7 +578,8 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                 finishWithSuccess(authorizationResponseToMap(authResponse));
             }
         } else {
-            finishWithError(exchangeCode ? AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE : AUTHORIZE_ERROR_CODE, String.format(AUTHORIZE_ERROR_MESSAGE_FORMAT, authException.error, authException.errorDescription), getCauseFromException(authException));
+            String errorCode = String.format("%s:%s", exchangeCode ? AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE : AUTHORIZE_ERROR_CODE, authException.code);
+            finishWithError(errorCode, String.format(AUTHORIZE_ERROR_MESSAGE_FORMAT, authException.error, authException.errorDescription), getCauseFromException(authException));
         }
     }
 
