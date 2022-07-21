@@ -1,13 +1,18 @@
 package io.crossingthestreams.flutterappauth;
 
+import static androidx.browser.customtabs.CustomTabsService.ACTION_CUSTOM_TABS_CONNECTION;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 import net.openid.appauth.AppAuthConfiguration;
@@ -380,6 +385,8 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
 
         AuthorizationService authorizationService = allowInsecureConnections ? insecureAuthorizationService : defaultAuthorizationService;
         Intent authIntent = authorizationService.getAuthorizationRequestIntent(authRequestBuilder.build());
+        logOpenBrowserEvent(authIntent);
+
         mainActivity.startActivityForResult(authIntent, exchangeCode ? RC_AUTH_EXCHANGE_CODE : RC_AUTH);
     }
 
@@ -549,6 +556,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
 
     private void processAuthorizationData(final AuthorizationResponse authResponse, AuthorizationException authException, boolean exchangeCode) {
         if (authException == null) {
+            logAuthorizationSuccess();
             if (exchangeCode) {
                 AppAuthConfiguration.Builder authConfigBuilder = new AppAuthConfiguration.Builder();
                 if (allowInsecureConnections) {
@@ -562,8 +570,10 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                     public void onTokenRequestCompleted(
                             TokenResponse resp, AuthorizationException ex) {
                         if (resp != null) {
+                            logRequestTokenSuccess();
                             finishWithSuccess(tokenResponseToMap(resp, authResponse));
                         } else {
+                            logRequestTokenFailed(ex);
                             String errorCode = String.format("%s:%s", AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE, ex.code);
                             finishWithError(errorCode, String.format(AUTHORIZE_ERROR_MESSAGE_FORMAT, ex.error, ex.errorDescription), getCauseFromException(ex));
                         }
@@ -578,6 +588,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
                 finishWithSuccess(authorizationResponseToMap(authResponse));
             }
         } else {
+            logAuthorizationFailed(authException);
             String errorCode = String.format("%s:%s", exchangeCode ? AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE : AUTHORIZE_ERROR_CODE, authException.code);
             finishWithError(errorCode, String.format(AUTHORIZE_ERROR_MESSAGE_FORMAT, authException.error, authException.errorDescription), getCauseFromException(authException));
         }
@@ -686,4 +697,45 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
         }
     }
 
+    private static boolean hasWarmupService(PackageManager pm, String packageName) {
+        Intent serviceIntent = new Intent();
+        serviceIntent.setAction(ACTION_CUSTOM_TABS_CONNECTION);
+        serviceIntent.setPackage(packageName);
+        return (pm.resolveService(serviceIntent, 0) != null);
+    }
+
+    private void logOpenBrowserEvent(Intent authIntent) {
+        Intent browserIntent = authIntent.getParcelableExtra("authIntent");
+        String browserPackage = browserIntent.getPackage();
+        boolean useCustomTab = hasWarmupService(this.mainActivity.getPackageManager(), browserPackage);
+
+        Bundle params = new Bundle();
+        params.putString("package_name", browserPackage);
+        params.putBoolean("custom_tab", useCustomTab);
+        FirebaseAnalytics.getInstance(mainActivity).logEvent("open_browser", params);
+    }
+
+    private void logAuthorizationFailed(AuthorizationException authException) {
+        Bundle params = new Bundle();
+        params.putInt("auth_exception_code", authException.code);
+        params.putString("auth_exception_error", authException.error);
+        params.putString("auth_exception_desc", authException.errorDescription);
+        FirebaseAnalytics.getInstance(mainActivity).logEvent("auth_failed", params);
+    }
+
+    private void logAuthorizationSuccess() {
+        FirebaseAnalytics.getInstance(mainActivity).logEvent("auth_success", null);
+    }
+
+    private void logRequestTokenFailed(AuthorizationException authException) {
+        Bundle params = new Bundle();
+        params.putInt("auth_exception_code", authException.code);
+        params.putString("auth_exception_error", authException.error);
+        params.putString("auth_exception_desc", authException.errorDescription);
+        FirebaseAnalytics.getInstance(mainActivity).logEvent("token_failed", params);
+    }
+
+    private void logRequestTokenSuccess() {
+        FirebaseAnalytics.getInstance(mainActivity).logEvent("token_success", null);
+    }
 }
