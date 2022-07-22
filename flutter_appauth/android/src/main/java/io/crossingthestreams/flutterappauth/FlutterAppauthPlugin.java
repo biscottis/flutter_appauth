@@ -2,7 +2,10 @@ package io.crossingthestreams.flutterappauth;
 
 import static androidx.browser.customtabs.CustomTabsService.ACTION_CUSTOM_TABS_CONNECTION;
 
+import static net.openid.appauth.AuthorizationException.GeneralErrors.PROGRAM_CANCELED_AUTH_FLOW;
+
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -503,9 +506,14 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
     }
 
     private void finishWithUnknownError(String appAuthErrorCode, Exception ex) {
-        String errorCode = (ex instanceof AuthorizationException)
-                ? String.format("%s:%s", appAuthErrorCode, ((AuthorizationException) ex).code)
-                : appAuthErrorCode;
+        String errorCode;
+        if (ex instanceof AuthorizationException) {
+            errorCode = String.format("%s:%s", appAuthErrorCode, ((AuthorizationException) ex).code);
+        } else if (ex instanceof ActivityNotFoundException) {
+            errorCode = String.format("%s:%s", appAuthErrorCode, PROGRAM_CANCELED_AUTH_FLOW.code);
+        } else {
+            errorCode = appAuthErrorCode;
+        }
         finishWithError(errorCode, ex.getLocalizedMessage(), getCauseFromException(ex));
     }
 
