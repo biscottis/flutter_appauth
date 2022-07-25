@@ -514,7 +514,7 @@ public class FlutterAppauthPlugin implements FlutterPlugin, MethodCallHandler, P
         } else {
             errorCode = appAuthErrorCode;
         }
-        finishWithError(errorCode, ex.getLocalizedMessage(), getCauseFromException(ex));
+        finishWithError(errorCode, ex.toString(), getCauseFromException(ex));
     }
 
     private void finishWithDiscoveryError(AuthorizationException ex) {
